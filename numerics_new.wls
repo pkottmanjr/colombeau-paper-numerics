@@ -22,8 +22,15 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
-(*viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r];*)
+viscosityModel = "linear";
+(* viscosityModel = "polynomial"; *)
+(* viscosityModel = "power-law"; *)
+Switch[
+    viscosityModel,
+    "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
+    "polynomial", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^2;
+    "power-law", viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r];
+]
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
@@ -36,6 +43,11 @@ getJump[params_] := Module[
         y, {r, R-eps, R+eps}
         ];
     solFunc = First[y /. sol];
+    (* If[
+        viscosityModel == "power-law",
+        plt = LogPlot[Abs[solFunc[R+z*eps]], {z, -1, 1}, PlotRange->All, PlotStyle->color],
+        plt = Plot[solFunc[R+z*eps], {z, -1, 1}, PlotRange->All, PlotStyle->color]
+    ] *)
     plt = Plot[solFunc[R+z*eps], {z, -1, 1}, PlotRange->All, PlotStyle->color]
 ];
 
@@ -45,7 +57,8 @@ epsValues = {0.05, 0.01, 0.005, 0.001};
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
-plts = Table[getJump[params], {params, paramsList}];
-legend = LineLegend[pltColors, epsValues, LegendLabel->"\[Epsilon]", LegendFunction->Panel];
-fig = GraphicsRow[{Show[plts], legend}];
-Export["fig.png", fig]
+plts = Table[getJump[params], {params, paramsList}]
+legend = LineLegend[pltColors, epsValues, LegendLabel->"\[Epsilon]", LegendFunction->Panel]
+(* fig = GraphicsRow[{Show[plts], legend}]; *)
+Export[viscosityModel <> "_fig.png", Show[plts]];
+Export[viscosityModel <> "_legend.png", legend];
