@@ -22,8 +22,8 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-(*viscosityModel = "linear";*)
-viscosityModel = "polynomial"; q = 4;
+viscosityModel = "linear";
+(* viscosityModel = "polynomial"; q = 2; *)
 (* viscosityModel = "power-law";  *)
 Switch[
     viscosityModel,
@@ -80,7 +80,7 @@ legend = LineLegend[pltColors, epsValues, LegendLabel->"\[CurlyEpsilon]", Legend
 pltsCombined = Show[
     plts,
     PlotLabel->Style[
-        viscosityModel <> " viscosity profile" <> If[viscosityModel == "polynomial", " with q = " <> ToString[q]],
+        viscosityModel <> " viscosity profile" <> If[viscosityModel == "polynomial", " with q = " <> ToString[q], ""],
         FontSize->16,
         FontColor->Black
     ],
@@ -90,5 +90,5 @@ pltsCombined = Show[
     }
 ]
 (* fig = GraphicsRow[{Show[plts], legend}]; *)
-Export[viscosityModel <> If[viscosityModel == "polynomial", "_q_" <> ToString[q]] <> "_fig.pdf", pltsCombined];
+Export[viscosityModel <> If[viscosityModel == "polynomial", "_q_" <> ToString[q], ""] <> "_fig.pdf", pltsCombined];
 Export[viscosityModel <> "_legend.pdf", legend];
