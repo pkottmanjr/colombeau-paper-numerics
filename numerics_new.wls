@@ -22,15 +22,15 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-viscosityModel = "linear";
-(* viscosityModel = "polynomial"; *)
-(* viscosityModel = "power-law"; *)
+(*viscosityModel = "linear";*)
+viscosityModel = "polynomial"; q = 4;
+(* viscosityModel = "power-law";  *)
 Switch[
     viscosityModel,
     "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
-    "polynomial", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^2;
+    "polynomial", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^q;
     "power-law", viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r];
-]
+];
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
@@ -53,12 +53,42 @@ getJump[params_] := Module[
 
 (*(*==========================================================*)*)
 
+(* Set plot parameters *)
 epsValues = {0.05, 0.01, 0.005, 0.001};
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
-plts = Table[getJump[params], {params, paramsList}]
-legend = LineLegend[pltColors, epsValues, LegendLabel->"\[Epsilon]", LegendFunction->Panel]
+(* Get exact value of jump *)
+exactJump[z_] := Switch[
+    viscosityModel,
+    "linear", -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/2),
+    "polynomial", -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/(q+1))
+];
+
+(* Create plots and legend *)
+plts = Table[getJump[params], {params, paramsList}];
+If[
+    viscosityModel != "power-law",
+    (
+        pltColors = Append[pltColors, {Dashed, Black}];
+        epsValues = Append[epsValues, "theor. jump"];
+        plts = Append[plts, Plot[exactJump[z], {z, -1, 1}, PlotStyle->{Dashed, Black}]];
+    )
+];
+legend = LineLegend[pltColors, epsValues, LegendLabel->"\[CurlyEpsilon]", LegendFunction->Panel]
+
+pltsCombined = Show[
+    plts,
+    PlotLabel->Style[
+        viscosityModel <> " viscosity profile" <> If[viscosityModel == "polynomial", " with q = " <> ToString[q]],
+        FontSize->16,
+        FontColor->Black
+    ],
+    AxesLabel->{
+        Style["\[Xi]", FontSize->12, FontColor->Black],
+        Style[Superscript[y,"(\[CurlyEpsilon])"], FontSize->12, FontColor->Black]
+    }
+]
 (* fig = GraphicsRow[{Show[plts], legend}]; *)
-Export[viscosityModel <> "_fig.png", Show[plts]];
-Export[viscosityModel <> "_legend.png", legend];
+Export[viscosityModel <> If[viscosityModel == "polynomial", "_q_" <> ToString[q]] <> "_fig.pdf", pltsCombined];
+Export[viscosityModel <> "_legend.pdf", legend];
