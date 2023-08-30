@@ -8,7 +8,8 @@ f[x_] := If[
     Exp[-1/x],
     0
 ];
-g[x_] := f[x] / (f[x] + f[1-x]);
+(*g[x_] := f[x] / (f[x] + f[1-x]);*)
+g[x_] := f[(x+1)/2] / (f[(x+1)/2] + f[(1-x)/2]);
 hEps[eps_, x_] := g[x/eps];
 (*Plot[{hEps[1, x], hEps[.2, x], hEps[.05, x]}, {x, -1, 1},  PlotLegends->{1, 0.2, 0.05}]*)
 
@@ -22,9 +23,9 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-viscosityModel = "linear";
+(* viscosityModel = "linear"; *)
 (* viscosityModel = "polynomial"; q = 2; *)
-(* viscosityModel = "power-law";  *)
+viscosityModel = "power-law"; 
 Switch[
     viscosityModel,
     "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
@@ -79,11 +80,11 @@ legend = LineLegend[pltColors, epsValues, LegendLabel->"\[CurlyEpsilon]", Legend
 
 pltsCombined = Show[
     plts,
-    PlotLabel->Style[
+    (* PlotLabel->Style[
         viscosityModel <> " viscosity profile" <> If[viscosityModel == "polynomial", " with q = " <> ToString[q], ""],
         FontSize->16,
         FontColor->Black
-    ],
+    ], *)
     AxesLabel->{
         Style["\[Xi]", FontSize->12, FontColor->Black],
         Style[Superscript[y,"(\[CurlyEpsilon])"], FontSize->12, FontColor->Black]
