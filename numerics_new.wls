@@ -23,15 +23,21 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-(* viscosityModel = "linear"; *)
-(* viscosityModel = "polynomial"; q = 2; *)
-viscosityModel = "power-law"; 
-Switch[
+(* viscosityModel = "linear";
+viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]; *)
+(* viscosityModel = "polynomial"; q = 2;
+viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^q; *)
+(* viscosityModel = "power-law";
+viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r]; *)
+viscosityModel = "full-power-law"; q = 1;
+viscosity[eps_, r_] := viscosity1 * ((D[c/r^2 * specVol[eps, r], r])^2 + 2 * c^2/r^6 * specVol[eps, r]^2)^(q/2);
+(* Switch[
     viscosityModel,
     "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
     "polynomial", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^q;
     "power-law", viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r];
-];
+    "full-power-law", viscosity[eps_, r_] := viscosity1 * ((D[c/r^2 * specVol[eps, r], r])^2 + 2 * c^2/r^6 * specVol[eps, r]^2)^((q-2)/2);
+]; *)
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
@@ -69,7 +75,7 @@ exactJump[z_] := Switch[
 (* Create plots and legend *)
 plts = Table[getJump[params], {params, paramsList}];
 If[
-    viscosityModel != "power-law",
+    viscosityModel != "power-law" && viscosityModel != "full-power-law",
     (
         pltColors = Append[pltColors, {Dashed, Black}];
         epsValues = Append[epsValues, "theor. jump"];
