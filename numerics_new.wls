@@ -25,12 +25,10 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
 (* viscosityModel = "linear";
 viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]; *)
-(* viscosityModel = "polynomial"; q = 2;
-viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R]^q; *)
 (* viscosityModel = "power-law";
 viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r]; *)
 viscosityModel = "full-power-law"; q = 1;
-viscosity[eps_, r_] := viscosity1 * ((D[c/r^2 * specVol[eps, r], r])^2 + 2 * c^2/r^6 * specVol[eps, r]^2)^(q/2);
+viscosity[eps_, r_] := viscosity1 * c/r^(2*q) * Abs[-3/(r * specVol[eps, r]) + D[specVol[eps, r], r]]^q;
 (* Switch[
     viscosityModel,
     "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
@@ -50,11 +48,6 @@ getJump[params_] := Module[
         y, {r, R-eps, R+eps}
         ];
     solFunc = First[y /. sol];
-    (* If[
-        viscosityModel == "power-law",
-        plt = LogPlot[Abs[solFunc[R+z*eps]], {z, -1, 1}, PlotRange->All, PlotStyle->color],
-        plt = Plot[solFunc[R+z*eps], {z, -1, 1}, PlotRange->All, PlotStyle->color]
-    ] *)
     plt = Plot[solFunc[R+z*eps], {z, -1, 1}, PlotRange->All, PlotStyle->color]
 ];
 
@@ -86,11 +79,6 @@ legend = LineLegend[pltColors, epsValues, LegendLabel->"\[CurlyEpsilon]", Legend
 
 pltsCombined = Show[
     plts,
-    (* PlotLabel->Style[
-        viscosityModel <> " viscosity profile" <> If[viscosityModel == "polynomial", " with q = " <> ToString[q], ""],
-        FontSize->16,
-        FontColor->Black
-    ], *)
     AxesLabel->{
         Style["\[Xi]", FontSize->12, FontColor->Black],
         Style[Superscript[y,"(\[CurlyEpsilon])"], FontSize->12, FontColor->Black]
