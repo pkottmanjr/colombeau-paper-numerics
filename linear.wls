@@ -48,7 +48,7 @@ pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
 (* Get exact value of jump *)
-exactJump[z_] := "linear", -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/2);
+exactJump[z_] := -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/2);
 
 (* Create plots and legend *)
 plts = Table[getJump[params], {params, paramsList}];

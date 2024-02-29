@@ -23,7 +23,7 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-viscosityModel = "shear-thinning"; q = 1;
+viscosityModel = "shear-thinning"; q = -0.3;
 viscosity[eps_, r_] := viscosity1 * c/r^(2*q) * Abs[-3/(r * specVol[eps, r]) + D[specVol[eps, r], r]]^q;
 
 (*(*Main method for computing the solution inside the interface*)*)
@@ -43,7 +43,9 @@ getJump[params_] := Module[
 (*(*==========================================================*)*)
 
 (* Set plot parameters *)
-epsValues = {0.05, 0.01, 0.005, 0.001};
+(* epsValues = {0.05, 0.01, 0.005, 0.001};*)
+epsValues = {0.01, 0.0001, 0.000001, 0.00000001};
+
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
