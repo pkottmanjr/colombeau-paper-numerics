@@ -34,7 +34,13 @@ getJump[params_] := Module[
             y'[r] - 2 * c^2/r^5 * specVol[eps, r] + viscosity[eps, r] * D[4 * c/r^3 * specVol[eps, r], r] == 0,
             y[R-eps] == 0
         },
-        y, {r, R-eps, R+eps}
+        y, {r, R-eps, R+eps},
+        StartingStepSize -> 1^-10,
+        MaxStepSize -> 1*^-4,
+        PrecisionGoal -> 7,
+        AccuracyGoal -> 6,
+        MaxSteps -> 5*^6,
+        InterpolationOrder -> All
         ];
     solFunc = First[y /. sol];
     plt = Plot[solFunc[R+z*eps], {z, -1, 1}, PlotRange->All, PlotStyle->color]
