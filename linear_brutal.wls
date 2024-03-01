@@ -55,8 +55,8 @@ epsValues = {0.05, 0.01, 0.005, 0.001};
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
-(* Get exact value of jump TODO recompute properly *)
-exactJump[z_] := -4 * c/R^3 * (specVol2 - specVol1) * (viscosity2 - viscosity1);
+(* Get exact value of jump *)
+exactJump[z_] := -4 * c/R^3 * (specVol2 - specVol1) * (viscosity1 + 0.5);
 
 (* Create plots and legend *)
 plts = Table[getJump[params], {params, paramsList}];
@@ -75,6 +75,3 @@ pltsCombined = Show[
 (* fig = GraphicsRow[{Show[plts], legend}]; *)
 Export[viscosityModel <> "_fig.pdf", pltsCombined];
 Export[viscosityModel <> "_legend.pdf", legend];
-
-
-
