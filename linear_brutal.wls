@@ -24,16 +24,15 @@ viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
 specVol[eps_, r_] := specVol1 + (specVol2 - specVol1) * hEps[eps, r-R];
-chiEps[eps_, r_] := If[
-    hEps[eps, r-R] < 0.4,
-    0,
-    If[
-        hEps[eps, r-R] > 0.6,
-        1,
-        1/2 + (hEps[eps, r-R] - 0.5)/0.2 + 1/(2*Pi) * Sin[10 * Pi * (hEps[eps, r-R] - 0.5)]
+
+delta = 0.1;
+chiDelta[chiEpsilon_] := If[
+    chiEpsilon < 0.5 - delta, 0., If[
+        chiEpsilon > 0.5 + delta, 1.,
+        1./2. + (chiEpsilon - 0.5)/(2. * delta) + 1./(2.*Pi) * Sin[Pi * (chiEpsilon - 0.5)/delta]
     ]
 ];
-viscosity[eps_, r_] := viscosity1 + (viscosity2 - viscosity1) * chiEps[eps, r-R];
+viscosity[eps_, r_] := viscosity1 + (viscosity2 - viscosity1) * chiDelta[hEps[eps, r-R]];
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
