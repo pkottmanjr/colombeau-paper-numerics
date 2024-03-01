@@ -49,8 +49,7 @@ getJump[params_] := Module[
 (*(*==========================================================*)*)
 
 (* Set plot parameters *)
-(* epsValues = {0.05, 0.01, 0.005, 0.001};*)
-epsValues = {0.01, 0.0001, 0.000001, 0.00000001};
+epsValues = {0.01, 0.005, 0.001, 0.00001, 0.000001};
 
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
