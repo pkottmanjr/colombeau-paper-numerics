@@ -18,13 +18,22 @@ R = 1; (*interface radius*)
 c = 1; (*total flux*)
 specVol1 = 1; (*value of specific volume for r<R*)
 specVol2 = 2; (*value of specific volume for r>R*)
+viscosityModel = "linear_brutal";
 viscosity1 = 1; (*value of viscosity for r<R*)
 viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
-specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-viscosityModel = "linear";
-viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
+specVol[eps_, r_] := specVol1 + (specVol2 - specVol1) * hEps[eps, r-R];
+chiEps[eps_, r_] := If[
+    hEps[eps, r-R] < 0.4,
+    0,
+    If[
+        hEps[eps, r-R] > 0.6,
+        1,
+        1/2 + (hEps[eps, r-R] - 0.5)/0.2 + 1/(2*Pi) * Sin[10 * Pi * (hEps[eps, r-R] - 0.5)]
+    ]
+];
+viscosity[eps_, r_] := viscosity1 + (viscosity2 - viscosity1) * chiEps[eps, r-R];
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
@@ -47,8 +56,8 @@ epsValues = {0.05, 0.01, 0.005, 0.001};
 pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
-(* Get exact value of jump *)
-exactJump[z_] := -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/2);
+(* Get exact value of jump TODO recompute properly *)
+exactJump[z_] := -4 * c/R^3 * (specVol2 - specVol1) * (viscosity2 - viscosity1);
 
 (* Create plots and legend *)
 plts = Table[getJump[params], {params, paramsList}];
@@ -67,3 +76,6 @@ pltsCombined = Show[
 (* fig = GraphicsRow[{Show[plts], legend}]; *)
 Export[viscosityModel <> "_fig.pdf", pltsCombined];
 Export[viscosityModel <> "_legend.pdf", legend];
+
+
+
