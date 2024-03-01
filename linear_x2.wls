@@ -18,25 +18,13 @@ R = 1; (*interface radius*)
 c = 1; (*total flux*)
 specVol1 = 1; (*value of specific volume for r<R*)
 specVol2 = 2; (*value of specific volume for r>R*)
+viscosityModel = "linear_x2";
 viscosity1 = 1; (*value of viscosity for r<R*)
 viscosity2 = 2; (*coefficient for viscosity function from r = R onward*)
 
 (*(*Define transitional profiles for specific volume and viscosity*)*)
-specVol[eps_, r_] := specVol1 + specVol2 * hEps[eps, r-R];
-
-(* FIXME add for loop to iterate over viscosity models *)
-viscosityModel = "linear";
-(* viscosityModel = "power law illustration"; *)
-(* viscosityModel = "shear-thickening"; q = 1; *)
-(* viscosityModel = "shear-thinning"; q = 1; *)
-
-Switch[
-    viscosityModel,
-    "linear", viscosity[eps_, r_] := viscosity1 + viscosity2 * hEps[eps, r-R];
-    "power-law-illustration", viscosity[eps_, r_] := viscosity1 + viscosity2 * D[hEps[eps, r-R], r];
-    "shear-thickening", viscosity1 * c/r^(2*q) * Abs[-3/(r * specVol[eps, r]) + D[specVol[eps, r], r]]^q;
-    "shear-thinning", viscosity1 * c/r^(2*q) * Abs[-3/(r * specVol[eps, r]) + D[specVol[eps, r], r]]^q;
-];
+specVol[eps_, r_] := specVol1 + (specVol2 - specVol1) * hEps[eps, r-R];
+viscosity[eps_, r_] := viscosity1 + (viscosity2 - viscosity1) * hEps[eps, r-R]^2;
 
 (*(*Main method for computing the solution inside the interface*)*)
 getJump[params_] := Module[
@@ -60,22 +48,13 @@ pltColors = {Blue, Red, Green, Magenta};
 paramsList = Table[{epsValues[[i]], pltColors[[i]]}, {i, 1, 4}];
 
 (* Get exact value of jump *)
-exactJump[z_] := Switch[
-    viscosityModel,
-    "linear", -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/2),
-    "polynomial", -4 * c/R^3 * specVol2 * (viscosity1 + viscosity2/(q+1))
-];
+exactJump[z_] := -4 * c/R^3 * (specVol2 - specVol1) * (viscosity1 + (viscosity2 - viscosity1)/3);
 
 (* Create plots and legend *)
 plts = Table[getJump[params], {params, paramsList}];
-If[
-    viscosityModel != "power-law" && viscosityModel != "full-power-law",
-    (
-        pltColors = Append[pltColors, {Dashed, Black}];
-        epsValues = Append[epsValues, "theor. jump"];
-        plts = Append[plts, Plot[exactJump[z], {z, -1, 1}, PlotStyle->{Dashed, Black}]];
-    )
-];
+pltColors = Append[pltColors, {Dashed, Black}];
+epsValues = Append[epsValues, "theor. jump"];
+plts = Append[plts, Plot[exactJump[z], {z, -1, 1}, PlotStyle->{Dashed, Black}]];
 legend = LineLegend[pltColors, epsValues, LegendLabel->"\[CurlyEpsilon]", LegendFunction->Panel]
 
 pltsCombined = Show[
@@ -86,5 +65,8 @@ pltsCombined = Show[
     }
 ]
 (* fig = GraphicsRow[{Show[plts], legend}]; *)
-Export[viscosityModel <> If[viscosityModel == "polynomial", "_q_" <> ToString[q], ""] <> "_fig.pdf", pltsCombined];
+Export[viscosityModel <> "_fig.pdf", pltsCombined];
 Export[viscosityModel <> "_legend.pdf", legend];
+
+
+
